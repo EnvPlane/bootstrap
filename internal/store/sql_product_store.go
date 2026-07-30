@@ -17,22 +17,21 @@ type SQLProductStore struct {
 func NewSQLProductStore(db *sql.DB, defaults []domain.ProductTemplate) (*SQLProductStore, error) {
 	store := &SQLProductStore{db: db}
 
-	empty, err := store.isEmpty()
-	if err != nil {
-		return nil, err
-	}
-	if empty {
-		for _, product := range defaults {
-			product.Name = normalizeProductName(product.Name)
-			if product.Name == "" {
-				continue
-			}
-			if strings.TrimSpace(product.ManifestSourceID) == "" && strings.TrimSpace(product.BasePath) == "" {
-				product.BasePath = "common/apps/" + product.Name
-			}
-			if err := store.Save(product); err != nil {
-				return nil, err
-			}
+	for _, product := range defaults {
+		product.Name = normalizeProductName(product.Name)
+		if product.Name == "" {
+			continue
+		}
+		if _, err := store.Get(product.Name); err == nil {
+			continue
+		} else if !errors.Is(err, ErrProductNotFound) {
+			return nil, err
+		}
+		if strings.TrimSpace(product.ManifestSourceID) == "" && strings.TrimSpace(product.BasePath) == "" {
+			product.BasePath = "common/apps/" + product.Name
+		}
+		if err := store.Save(product); err != nil {
+			return nil, err
 		}
 	}
 
@@ -107,15 +106,6 @@ ON CONFLICT (name) DO UPDATE SET
 func (s *SQLProductStore) Delete(name string) error {
 	_, err := s.db.Exec(`DELETE FROM products WHERE name = $1`, normalizeProductName(name))
 	return err
-}
-
-func (s *SQLProductStore) isEmpty() (bool, error) {
-	var exists bool
-	err := s.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM products LIMIT 1)`).Scan(&exists)
-	if err != nil {
-		return false, err
-	}
-	return !exists, nil
 }
 
 func (s *SQLProductStore) scanByQuery(query string, args ...any) (domain.ProductTemplate, error) {

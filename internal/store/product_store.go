@@ -35,19 +35,22 @@ func NewJSONProductStore(path string, defaults []domain.ProductTemplate) (*JSONP
 	if err := store.load(); err != nil {
 		return nil, err
 	}
-	if len(store.data) == 0 {
-		for _, product := range defaults {
-			name := normalizeProductName(product.Name)
-			if name == "" {
-				continue
-			}
-			product.Name = name
-			store.data[name] = product
+	changed := false
+	for _, product := range defaults {
+		name := normalizeProductName(product.Name)
+		if name == "" {
+			continue
 		}
-		if len(store.data) > 0 {
-			if err := store.persistLocked(); err != nil {
-				return nil, err
-			}
+		if _, ok := store.data[name]; ok {
+			continue
+		}
+		product.Name = name
+		store.data[name] = product
+		changed = true
+	}
+	if changed {
+		if err := store.persistLocked(); err != nil {
+			return nil, err
 		}
 	}
 	return store, nil

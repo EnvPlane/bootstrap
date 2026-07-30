@@ -714,6 +714,13 @@ func (b *HelmDirectBackend) renderIdentityValues(environment domain.Environment)
 
 func (b *HelmDirectBackend) renderHelmImageValues(environment domain.Environment) []helmDirectValue {
 	valuesByName := map[string]string{}
+	if domainName := strings.TrimSpace(environment.Domain); domainName != "" {
+		valuesByName["ingressHost"] = domainName
+		valuesByName["previewHost"] = domainName
+		valuesByName["previewUrl"] = "https://" + domainName
+		valuesByName["private_domain"] = domainName
+		valuesByName["main_domain"] = domainName
+	}
 	for _, service := range environment.Services {
 		key := normalizeHelmServiceTag(strings.TrimSpace(service.Name))
 		if key == "" {

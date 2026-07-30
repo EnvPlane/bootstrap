@@ -55,6 +55,19 @@ func Default() Catalog {
 					{Name: "app", TagKey: "imageTag", DefaultTag: "latest", Required: true},
 				},
 			},
+			"envpilot-smoke": {
+				Name:        "envpilot-smoke",
+				BasePath:    "/var/lib/envpilot/charts/envpilot-smoke",
+				HealthCheck: "off",
+				DefaultMode: domain.ModeFull,
+				Infrastructure: domain.Infrastructure{
+					Zone:     "default",
+					Capacity: "standard",
+				},
+				Services: []domain.ServiceTemplate{
+					{Name: "app", TagKey: "imageTag", DefaultTag: "latest", Required: true},
+				},
+			},
 			"bethunder": {
 				Name:            "bethunder",
 				Project:         "cms",
