@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/envpilot/bootstrap/internal/domain"
+	"github.com/envpilot/contracts/domain"
 )
 
 func TestKubernetesManagedResourceClientBlocksUnlabeledApplyUpdateAndDeleteForAllRunnerKinds(t *testing.T) {

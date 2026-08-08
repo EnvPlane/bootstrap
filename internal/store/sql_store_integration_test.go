@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/postgres"
+	"github.com/envpilot/contracts/domain"
 )
 
 func TestSQLStoreCRUD(t *testing.T) {

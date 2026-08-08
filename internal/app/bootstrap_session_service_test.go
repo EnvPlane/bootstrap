@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/store"
+	"github.com/envpilot/contracts/domain"
 )
 
 func TestBootstrapSessionUpdateRejectsInvalidStatus(t *testing.T) {

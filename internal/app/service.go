@@ -13,12 +13,12 @@ import (
 	"github.com/envpilot/bootstrap/internal/bootstrap"
 	"github.com/envpilot/bootstrap/internal/catalog"
 	"github.com/envpilot/bootstrap/internal/config"
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/gitops"
 	"github.com/envpilot/bootstrap/internal/orchestrator"
 	scmcomment "github.com/envpilot/bootstrap/internal/scm/comment"
 	"github.com/envpilot/bootstrap/internal/secrets"
 	"github.com/envpilot/bootstrap/internal/store"
+	"github.com/envpilot/contracts/domain"
 )
 
 type EnvironmentService struct {

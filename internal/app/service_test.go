@@ -12,10 +12,10 @@ import (
 
 	"github.com/envpilot/bootstrap/internal/catalog"
 	"github.com/envpilot/bootstrap/internal/config"
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/gitops"
 	"github.com/envpilot/bootstrap/internal/orchestrator"
 	"github.com/envpilot/bootstrap/internal/store"
+	"github.com/envpilot/contracts/domain"
 )
 
 func TestMain(m *testing.M) {

@@ -1,7 +1,7 @@
 package catalog
 
 import (
-	"github.com/envpilot/bootstrap/internal/domain"
+	"github.com/envpilot/contracts/domain"
 )
 
 func DefaultProjects() []domain.Project {

@@ -14,9 +14,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/gitops"
 	"github.com/envpilot/bootstrap/internal/store"
+	"github.com/envpilot/contracts/domain"
 	"gopkg.in/yaml.v3"
 )
 

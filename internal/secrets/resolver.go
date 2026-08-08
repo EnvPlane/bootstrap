@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/envpilot/bootstrap/internal/domain"
+	"github.com/envpilot/contracts/domain"
 )
 
 type Resolver struct {

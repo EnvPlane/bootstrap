@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/envpilot/bootstrap/internal/domain"
 	"github.com/envpilot/bootstrap/internal/store"
+	"github.com/envpilot/contracts/domain"
 )
 
 type BootstrapSessionService struct {
