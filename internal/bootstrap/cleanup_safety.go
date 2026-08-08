@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 type CleanupSafetyConfig struct {

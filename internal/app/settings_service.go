@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"envpilot/internal/config"
-	"envpilot/internal/domain"
-	"envpilot/internal/store"
+	"github.com/envpilot/bootstrap/internal/config"
+	"github.com/envpilot/bootstrap/internal/domain"
+	"github.com/envpilot/bootstrap/internal/store"
 )
 
 type SettingsService struct {

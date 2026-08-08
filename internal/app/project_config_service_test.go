@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"envpilot/internal/domain"
-	"envpilot/internal/store"
+	"github.com/envpilot/bootstrap/internal/domain"
+	"github.com/envpilot/bootstrap/internal/store"
 )
 
 func TestProjectConfigServiceSavesEncryptedSensitiveValuesAndMasksPublicResponse(t *testing.T) {

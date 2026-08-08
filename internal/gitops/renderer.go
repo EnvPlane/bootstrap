@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 type FluxOptions struct {

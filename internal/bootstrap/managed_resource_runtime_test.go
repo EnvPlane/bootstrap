@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 func TestManagedResourceRuntimeBlocksUnlabeledApplyUpdateAndDeleteForAllRunnerKinds(t *testing.T) {

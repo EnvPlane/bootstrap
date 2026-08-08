@@ -8,7 +8,7 @@ import (
 	"sort"
 	"sync"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 var ErrProjectNotFound = errors.New("project not found")

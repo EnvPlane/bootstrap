@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {

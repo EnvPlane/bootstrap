@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 func TestBuildEnvironmentCommentIncludesURLAndStatus(t *testing.T) {

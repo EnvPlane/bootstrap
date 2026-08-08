@@ -22,15 +22,15 @@ func TestPullRequestServiceCreatesGitHubPullRequest(t *testing.T) {
 
 	client := &http.Client{
 		Transport: testRoundTripper(func(r *http.Request) (*http.Response, error) {
-		gotPath = r.URL.Path
-		gotAuth = r.Header.Get("Authorization")
-		if err := json.NewDecoder(r.Body).Decode(&gotPayload); err != nil {
-			t.Fatalf("decode payload: %v", err)
-		}
+			gotPath = r.URL.Path
+			gotAuth = r.Header.Get("Authorization")
+			if err := json.NewDecoder(r.Body).Decode(&gotPayload); err != nil {
+				t.Fatalf("decode payload: %v", err)
+			}
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Header:     http.Header{"Content-Type": {"application/json"}},
-				Body: io.NopCloser(strings.NewReader(`{"html_url":"https://github.com/acme/gitops/pull/7","number":7}`)),
+				Body:       io.NopCloser(strings.NewReader(`{"html_url":"https://github.com/acme/gitops/pull/7","number":7}`)),
 			}, nil
 		}),
 	}

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"envpilot/internal/domain"
+	"github.com/envpilot/bootstrap/internal/domain"
 )
 
 type Commenter interface {

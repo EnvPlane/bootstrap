@@ -1,4 +1,4 @@
-module envpilot
+module github.com/envpilot/bootstrap
 
 go 1.25.0
 
