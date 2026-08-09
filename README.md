@@ -1,23 +1,41 @@
-# EnvPilot Bootstrap
+# EnvPlane Bootstrap
 
-Cluster onboarding and bootstrap workflow code.
+Cluster onboarding workflow for [EnvPlane](https://envplane.dev). It supports
+the safe transition from an unregistered Kubernetes target to a managed
+environment with Agent and Runner components.
 
-## Scope
+## Responsibilities
 
-- Bootstrap session lifecycle support.
-- Manifest template generation and validation.
-- Managed resource discovery helpers.
-- Cleanup safety checks.
-- Agent and runner installation flow support.
+- Manage bootstrap session lifecycle.
+- Generate and validate installation manifests.
+- Discover managed resources safely.
+- Enforce cleanup and replay protections.
+- Support Agent and Runner installation flows.
 
-## Source Origin
+## Development
 
-This repository was split from:
+```bash
+go test ./...
+go vet ./...
+make test
+```
 
-- `internal/bootstrap`
-- bootstrap-related services in `internal/app`
-- bootstrap stores and shared domain/config packages
+The local `docker-compose.yml` provides a development harness where supported.
+Production onboarding is initiated through the authenticated control-plane API
+or frontend and reconciled by the deployment layer.
 
-## Follow-up
+## Security
 
-Extract the bootstrap service boundary from the control-plane API once the API contracts are stabilized in `contracts`.
+Bootstrap credentials are one-time or short-lived values. Pass them through
+managed Secrets, never log them, and never commit them to manifests or examples.
+
+## Related components
+
+- [Control Plane](https://github.com/EnvPlane/control-plane)
+- [Agent](https://github.com/EnvPlane/agent)
+- [Runner](https://github.com/EnvPlane/runner)
+- [Deploy](https://github.com/EnvPlane/deploy)
+
+## Status
+
+Private EnvPlane platform component under active development.
