@@ -47,4 +47,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Verify branding release gate contract
+        run: bash scripts/tests/test-brand-release-e2e-contract.sh
       - run: go test ./...

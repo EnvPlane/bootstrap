@@ -1,4 +1,4 @@
-.PHONY: test run build docker-build docker-build-frontend helm-template dev dev-down dev-logs test-integration test-sql-bootstrap-claim
+.PHONY: test run build docker-build docker-build-frontend helm-template dev dev-down dev-logs test-integration test-sql-bootstrap-claim test-brand-release-e2e-contract
 
 test:
 	go test ./...
@@ -32,3 +32,6 @@ test-integration:
 
 test-sql-bootstrap-claim:
 	go test -tags=integration ./internal/store -run TestSQLBootstrapSessionStoreClaimBootstrapTokenIsAtomic -count=1
+
+test-brand-release-e2e-contract:
+	bash scripts/tests/test-brand-release-e2e-contract.sh
