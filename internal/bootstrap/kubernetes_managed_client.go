@@ -118,7 +118,7 @@ func (c KubernetesManagedResourceClient) getExisting(ctx context.Context, path s
 	if err != nil {
 		return domain.ResourceSnapshot{}, false, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotFound {
 		return domain.ResourceSnapshot{}, false, nil
 	}
@@ -150,10 +150,10 @@ func (c KubernetesManagedResourceClient) do(ctx context.Context, method string, 
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		responseBody, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return fmt.Errorf("Kubernetes %s failed: status=%d body=%s", method, resp.StatusCode, strings.TrimSpace(string(responseBody)))
+		return fmt.Errorf("kubernetes %s failed: status=%d body=%s", method, resp.StatusCode, strings.TrimSpace(string(responseBody)))
 	}
 	return nil
 }

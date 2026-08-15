@@ -47,6 +47,20 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Enforce canonical GitOps renderer ownership
+        run: test ! -f internal/gitops/renderer.go
       - name: Verify branding release gate contract
         run: bash scripts/tests/test-brand-release-e2e-contract.sh
       - run: go test ./...
+      - name: Enforce public bootstrap boundary
+        run: ./scripts/check-public-boundary.sh
+      - run: go vet ./...
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64
+      - run: go test -race ./...
+      - run: go test -coverprofile=cover.out ./...
+      - name: Enforce coverage floor
+        run: |
+          total="$(go tool cover -func=cover.out | awk '/^total:/ {gsub(/%/, "", $NF); print $NF}')"
+          awk -v total="$total" 'BEGIN { if (total < 20) { print "coverage below 20%: " total "%"; exit 1 } }'

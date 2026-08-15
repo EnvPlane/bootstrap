@@ -1,31 +1,10 @@
-.PHONY: test run build docker-build docker-build-frontend helm-template dev dev-down dev-logs test-integration test-sql-bootstrap-claim test-brand-release-e2e-contract
+.PHONY: test lint test-integration test-sql-bootstrap-claim test-brand-release-e2e-contract
 
 test:
 	go test ./...
 
-run:
-	go run ./apps/api
-
-build:
-	go build -o bin/envpilot ./apps/api
-
-docker-build:
-	docker build -t envpilot:local .
-
-docker-build-frontend:
-	docker build -f apps/frontend/Dockerfile -t envpilot-frontend:local .
-
-helm-template:
-	helm template envpilot deploy/helm/envpilot-control-plane
-
-dev:
-	docker compose up --build
-
-dev-down:
-	docker compose down --remove-orphans
-
-dev-logs:
-	docker compose logs -f api postgres redis
+lint:
+	golangci-lint run
 
 test-integration:
 	go test -tags=integration ./...

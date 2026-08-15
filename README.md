@@ -18,9 +18,9 @@ environment with Agent and Runner components.
 go test ./...
 go vet ./...
 make test
+make lint
 ```
 
-The local `docker-compose.yml` provides a development harness where supported.
 Production onboarding is initiated through the authenticated control-plane API
 or frontend and reconciled by the deployment layer.
 
