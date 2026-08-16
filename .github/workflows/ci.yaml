@@ -47,12 +47,13 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Use published contracts module
+        run: go mod edit -dropreplace=github.com/envpilot/contracts
       - name: Scan Go dependencies
         uses: golang/govulncheck-action@v1
         with:
           go-package: ./...
-      - name: Use published contracts module
-        run: go mod edit -dropreplace=github.com/envpilot/contracts
+          repo-checkout: false
       - name: Enforce canonical GitOps renderer ownership
         run: test ! -f internal/gitops/renderer.go
       - name: Verify branding release gate contract
@@ -61,7 +62,7 @@ jobs:
       - name: Enforce public bootstrap boundary
         run: ./scripts/check-public-boundary.sh
       - run: go vet ./...
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v7
         with:
           version: v2.1.6
       - run: go test -race ./...
