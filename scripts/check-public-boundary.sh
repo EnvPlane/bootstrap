@@ -48,7 +48,10 @@ if [[ -n "${required_go}" ]]; then
   fi
 
   if [[ -n "${selected_go}" ]]; then
-    GOTOOLCHAIN=local GOSUMDB=off GOPROXY=off "${selected_go}" list -deps ./cmd/...
+    # bootstrap is a library/module repo and intentionally has no cmd/
+    # package.  Enumerate the module packages instead of assuming the layout
+    # used by the API repositories.
+    GOTOOLCHAIN=local GOSUMDB=off GOPROXY=off "${selected_go}" list -deps ./...
   else
     echo "::error::No local Go toolchain >= ${required_go} available for public boundary check" >&2
     exit 1
