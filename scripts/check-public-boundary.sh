@@ -19,7 +19,7 @@ version_ge() {
 
 go_version() {
   local bin="$1"
-  "$bin" version 2>/dev/null | awk '{print $3}' | sed 's/^go//'
+  GOTOOLCHAIN=local "$bin" version 2>/dev/null | awk '{print $3}' | sed 's/^go//'
 }
 
 go_bin="$(command -v go)"
@@ -43,7 +43,7 @@ if [[ -n "${required_go}" ]]; then
   fi
 
   if [[ -n "${selected_go}" ]]; then
-    GOSUMDB=off GOPROXY=off "${selected_go}" list -deps ./cmd/...
+    GOTOOLCHAIN=local GOSUMDB=off GOPROXY=off "${selected_go}" list -deps ./cmd/...
   else
     echo "::error::No local Go toolchain >= ${required_go} available for public boundary check" >&2
     exit 1
