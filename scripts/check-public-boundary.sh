@@ -23,15 +23,20 @@ go_version() {
 }
 
 go_bin="$(command -v go)"
-if [[ -x "/usr/local/go/bin/go" ]]; then
-  go_bin="/usr/local/go/bin/go"
-fi
 
 if [[ -n "${required_go}" ]]; then
   selected_go=""
-  if [[ -x "${go_bin}" ]] && version_ge "$(go_version "${go_bin}")" "${required_go}"; then
-    selected_go="${go_bin}"
-  fi
+  # Keep the binary selected by PATH first.  ensure-go.sh may have just
+  # placed a hosted/toolcache runtime on PATH; unconditionally preferring
+  # /usr/local/go can select an older installation and report a false
+  # "no local toolchain" error.
+  for candidate in "${go_bin}" /usr/local/go/bin/go; do
+    [[ -x "${candidate}" ]] || continue
+    if version_ge "$(go_version "${candidate}")" "${required_go}"; then
+      selected_go="${candidate}"
+      break
+    fi
+  done
 
   if [[ -z "${selected_go}" ]]; then
     if [[ -x "scripts/ensure-go.sh" ]]; then
