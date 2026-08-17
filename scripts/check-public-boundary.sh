@@ -38,14 +38,6 @@ if [[ -n "${required_go}" ]]; then
     fi
   done
 
-  # GitHub Actions exports GOTOOLCHAIN=go<module-version> in a later step.
-  # That value is already validated by ensure-go.sh; retain the PATH binary
-  # even when a vendor Go wrapper does not report its version under
-  # GOTOOLCHAIN=local (otherwise we falsely reject a usable runtime).
-  if [[ -z "${selected_go}" && "${GOTOOLCHAIN:-}" == "go${required_go}" && -x "${go_bin}" ]]; then
-    selected_go="${go_bin}"
-  fi
-
   if [[ -z "${selected_go}" ]]; then
     if [[ -x "scripts/ensure-go.sh" ]]; then
       GO_MIN_VERSION="${required_go}" GO_VERSION_FILE=go.mod ./scripts/ensure-go.sh
