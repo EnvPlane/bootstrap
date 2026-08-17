@@ -34,7 +34,7 @@ jobs:
       - name: Enforce public bootstrap boundary
         run: ./scripts/check-public-boundary.sh
       - run: go vet ./...
-      - uses: golangci/golangci-lint-action@v7
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
       - run: go test -race ./...
