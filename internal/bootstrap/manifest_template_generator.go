@@ -60,11 +60,20 @@ type NetworkPolicyConfig struct {
 var sf801SupportedKinds = map[string]struct{}{
 	"Namespace":     {},
 	"Deployment":    {},
+	"StatefulSet":   {},
+	"DaemonSet":     {},
 	"Service":       {},
 	"Ingress":       {},
 	"ConfigMap":     {},
+	"PersistentVolumeClaim": {},
+	"Job":           {},
+	"CronJob":       {},
+	"ServiceAccount": {},
 	"ResourceQuota": {},
 	"LimitRange":    {},
+	"NetworkPolicy": {},
+	"HorizontalPodAutoscaler": {},
+	"PodDisruptionBudget": {},
 }
 
 func GenerateManifestTemplates(
