@@ -58,22 +58,22 @@ type NetworkPolicyConfig struct {
 }
 
 var sf801SupportedKinds = map[string]struct{}{
-	"Namespace":     {},
-	"Deployment":    {},
-	"StatefulSet":   {},
-	"DaemonSet":     {},
-	"Service":       {},
-	"Ingress":       {},
-	"ConfigMap":     {},
-	"PersistentVolumeClaim": {},
-	"Job":           {},
-	"CronJob":       {},
-	"ServiceAccount": {},
-	"ResourceQuota": {},
-	"LimitRange":    {},
-	"NetworkPolicy": {},
+	"Namespace":               {},
+	"Deployment":              {},
+	"StatefulSet":             {},
+	"DaemonSet":               {},
+	"Service":                 {},
+	"Ingress":                 {},
+	"ConfigMap":               {},
+	"PersistentVolumeClaim":   {},
+	"Job":                     {},
+	"CronJob":                 {},
+	"ServiceAccount":          {},
+	"ResourceQuota":           {},
+	"LimitRange":              {},
+	"NetworkPolicy":           {},
 	"HorizontalPodAutoscaler": {},
-	"PodDisruptionBudget": {},
+	"PodDisruptionBudget":     {},
 }
 
 func GenerateManifestTemplates(
@@ -513,8 +513,26 @@ func rewriteIngressHosts(manifest map[string]any, snapshot domain.ResourceSnapsh
 	if !ok {
 		return
 	}
+	if metadata, ok := manifest["metadata"].(map[string]any); ok {
+		metadata["name"] = domain.BoundedDNSName(featureIngressName(snapshot.Namespace, snapshot.Name), 63)
+		if annotations, ok := metadata["annotations"].(map[string]any); ok {
+			metadata["annotations"] = domain.SafeIngressAnnotations(annotations, nil)
+		}
+	}
 	rewriteRuleHosts(spec, snapshot.Name, previewDomain, hostPatternTemplate)
 	rewriteTLSHosts(spec, snapshot.Name, previewDomain, hostPatternTemplate)
+	if entries, ok := spec["tls"].([]any); ok {
+		secretName := domain.BoundedDNSName(featureIngressName(snapshot.Namespace, snapshot.Name)+"-tls", 63)
+		for _, raw := range entries {
+			if entry, ok := raw.(map[string]any); ok {
+				entry["secretName"] = secretName
+			}
+		}
+	}
+}
+
+func featureIngressName(namespace, ingress string) string {
+	return strings.Trim(strings.TrimSpace(namespace), "-") + "-" + strings.Trim(strings.TrimSpace(ingress), "-")
 }
 
 func rewriteRuleHosts(spec map[string]any, resourceName string, previewDomain string, hostPatternTemplate string) {
