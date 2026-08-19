@@ -237,7 +237,7 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"    app.kubernetes.io/managed-by: envpilot\n" +
 		"    envpilot.io/managed: true\n" +
 		"    envpilot.io/project: checkout\n" +
-		"  name: orders\n" +
+		"  name: dev-base-orders\n" +
 		"  namespace: \"envpilot-pr-{{ .PRNumber }}\"\n" +
 		"spec:\n" +
 		"  rules:\n" +
@@ -255,7 +255,8 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"  tls:\n" +
 		"    -\n" +
 		"      hosts:\n" +
-		"        - orders.preview.example.com\n"
+		"        - orders.preview.example.com\n" +
+		"      secretName: dev-base-orders-tls\n"
 	if byKind["Ingress"].YAML != expectedIngressYAML {
 		t.Fatalf("unexpected ingress yaml:\n%s", byKind["Ingress"].YAML)
 	}
