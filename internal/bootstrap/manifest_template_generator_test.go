@@ -203,8 +203,8 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		t.Fatalf("generate templates second run: %v", err)
 	}
 
-	if len(first) != 7 {
-		t.Fatalf("expected 7 templates, got %d", len(first))
+	if len(first) != len(snapshots) {
+		t.Fatalf("expected one template per supported snapshot (%d), got %d", len(snapshots), len(first))
 	}
 	if strings.Join(extractYAML(first), "\n---\n") != strings.Join(extractYAML(second), "\n---\n") {
 		t.Fatalf("templates are not deterministic")
