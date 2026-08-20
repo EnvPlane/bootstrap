@@ -3,8 +3,8 @@
 package bootstrap
 
 import (
-	"github.com/envpilot/bootstrap/internal/bootstrap"
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/bootstrap/internal/bootstrap"
+	"github.com/envplane/contracts/domain"
 )
 
 type CleanupSafetyConfig = bootstrap.CleanupSafetyConfig

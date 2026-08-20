@@ -7,7 +7,7 @@ framework or cluster fixture is created here.
 
 The gate performs, in order:
 
-1. Resolves canonical `ENVPLANE_E2E_*` inputs. `ENVPILOT_E2E_*` is a migration
+1. Resolves canonical `ENVPLANE_E2E_*` inputs. `ENVPLANE_E2E_*` is a migration
    fallback only; when both are set, the canonical value wins.
 2. Resolves both immutable N-1 and N chart references from OCI and fails before
    touching Kubernetes if either artifact is unavailable.
@@ -22,8 +22,8 @@ Example (published artifacts and an already-provisioned cluster):
 ```bash
 ENVPLANE_E2E_CONTEXT=bethunder-local \
 ENVPLANE_E2E_VALUES_FILE=/path/to/published-values.yaml \
-ENVPLANE_E2E_CHART_N_MINUS_1=oci://ghcr.io/EnvPlane/envpilot:0.3.136 \
-ENVPLANE_E2E_CHART_N=oci://ghcr.io/EnvPlane/envpilot:0.3.137 \
+ENVPLANE_E2E_CHART_N_MINUS_1=oci://ghcr.io/envplane/envplane:0.3.136 \
+ENVPLANE_E2E_CHART_N=oci://ghcr.io/envplane/envplane:0.3.137 \
 ENVPLANE_E2E_SCM_TOKEN_FILE=/path/to/operator-token-file \
   ./scripts/brand-release-e2e.sh
 ```

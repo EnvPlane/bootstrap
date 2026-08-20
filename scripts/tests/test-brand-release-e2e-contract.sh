@@ -12,7 +12,7 @@ contract_output="$($script --contract 2>/dev/null)"
 }
 for expected in \
   'ENVPLANE_E2E_CONTEXT' \
-  'ENVPILOT_E2E_CONTEXT' \
+  'ENVPLANE_E2E_CONTEXT' \
   'canonical wins over legacy' \
   'published OCI artifacts' \
   'fresh install, runtime authentication, resource scan and Helm Direct bootstrap' \

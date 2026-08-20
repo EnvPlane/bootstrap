@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 type CleanupSafetyConfig struct {
@@ -17,9 +17,9 @@ type CleanupSafetyConfig struct {
 
 const (
 	EnvPlaneManagedByLabel     = "app.kubernetes.io/managed-by"
-	EnvPlaneManagedLabel       = "envpilot.io/managed"
-	EnvPlaneProjectLabel       = "envpilot.io/project"
-	EnvPlaneEnvironmentIDLabel = "envpilot.io/environment-id"
+	EnvPlaneManagedLabel       = "envplane.io/managed"
+	EnvPlaneProjectLabel       = "envplane.io/project"
+	EnvPlaneEnvironmentIDLabel = "envplane.io/environment-id"
 )
 
 var defaultProtectedNamespaces = []string{
@@ -171,7 +171,7 @@ func hasEnvPlaneManagedLabel(labels map[string]string) bool {
 	if labels == nil {
 		return false
 	}
-	if strings.EqualFold(strings.TrimSpace(labels[EnvPlaneManagedByLabel]), "envpilot") {
+	if strings.EqualFold(strings.TrimSpace(labels[EnvPlaneManagedByLabel]), "envplane") {
 		return true
 	}
 	if strings.EqualFold(strings.TrimSpace(labels[EnvPlaneManagedLabel]), "true") {

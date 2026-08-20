@@ -6,13 +6,13 @@ func TestValidateManifestTemplatesRejectsInvalidYAML(t *testing.T) {
 	result := ValidateManifestTemplates([]ManifestTemplate{
 		{
 			Kind:      "Deployment",
-			Namespace: "envpilot-pr-{{ .PRNumber }}",
+			Namespace: "envplane-pr-{{ .PRNumber }}",
 			Name:      "orders",
 			YAML: `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: orders
-  namespace: envpilot-pr-{{ .PRNumber }}
+  namespace: envplane-pr-{{ .PRNumber }}
 spec:
   template:
     spec:
@@ -73,13 +73,13 @@ func TestValidateManifestTemplatesRejectsSchemaError(t *testing.T) {
 	result := ValidateManifestTemplates([]ManifestTemplate{
 		{
 			Kind:      "Service",
-			Namespace: "envpilot-pr-{{ .PRNumber }}",
+			Namespace: "envplane-pr-{{ .PRNumber }}",
 			Name:      "orders",
 			YAML: `apiVersion: v1
 kind: Service
 metadata:
   name: orders
-  namespace: envpilot-pr-{{ .PRNumber }}
+  namespace: envplane-pr-{{ .PRNumber }}
 spec:
   selector:
     app: orders`,
@@ -104,13 +104,13 @@ func TestValidateManifestTemplatesAcceptsValidTemplates(t *testing.T) {
 	result := ValidateManifestTemplates([]ManifestTemplate{
 		{
 			Kind:      "Deployment",
-			Namespace: "envpilot-pr-{{ .PRNumber }}",
+			Namespace: "envplane-pr-{{ .PRNumber }}",
 			Name:      "orders",
 			YAML: `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: orders
-  namespace: envpilot-pr-{{ .PRNumber }}
+  namespace: envplane-pr-{{ .PRNumber }}
 spec:
   template:
     spec:
@@ -120,13 +120,13 @@ spec:
 		},
 		{
 			Kind:      "Service",
-			Namespace: "envpilot-pr-{{ .PRNumber }}",
+			Namespace: "envplane-pr-{{ .PRNumber }}",
 			Name:      "orders",
 			YAML: `apiVersion: v1
 kind: Service
 metadata:
   name: orders
-  namespace: envpilot-pr-{{ .PRNumber }}
+  namespace: envplane-pr-{{ .PRNumber }}
 spec:
   ports:
     - port: 80`,

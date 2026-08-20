@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 func TestValidateCleanupSafetyBlocksProtectedNamespaceTarget(t *testing.T) {
@@ -21,7 +21,7 @@ func TestValidateCleanupSafetyBlocksProtectedNamespaceTarget(t *testing.T) {
 func TestValidateCleanupSafetyRejectsDangerousLabelConfig(t *testing.T) {
 	config := DefaultCleanupSafetyConfig()
 	config.DeleteEnvPlaneLabeledOnly = false
-	err := ValidateCleanupSafetyConfig(config, []string{"envpilot-pr-123"})
+	err := ValidateCleanupSafetyConfig(config, []string{"envplane-pr-123"})
 	if err == nil {
 		t.Fatalf("expected labels-only validation error")
 	}
@@ -35,15 +35,15 @@ func TestFilterCleanupEligibleResourcesIgnoresProtectedAndUnlabeled(t *testing.T
 	resources := []domain.ResourceSnapshot{
 		{
 			Kind:      "Deployment",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "orders",
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "envpilot",
+				"app.kubernetes.io/managed-by": "envplane",
 			},
 		},
 		{
 			Kind:      "Service",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "manual-service",
 			Labels:    map[string]string{"app": "manual"},
 		},
@@ -52,7 +52,7 @@ func TestFilterCleanupEligibleResourcesIgnoresProtectedAndUnlabeled(t *testing.T
 			Namespace: "kube-system",
 			Name:      "coredns",
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "envpilot",
+				"app.kubernetes.io/managed-by": "envplane",
 			},
 		},
 	}
@@ -69,13 +69,13 @@ func TestFilterCleanupEligibleResourcesIgnoresProtectedAndUnlabeled(t *testing.T
 func TestIsEnvPlaneManagedRequiresOwnershipLabels(t *testing.T) {
 	resource := domain.ResourceSnapshot{
 		Kind:      "Deployment",
-		Namespace: "envpilot-pr-123",
+		Namespace: "envplane-pr-123",
 		Name:      "orders",
 		Labels: map[string]string{
-			"app.kubernetes.io/managed-by": "envpilot",
-			"envpilot.io/managed":          "true",
-			"envpilot.io/project":          "checkout",
-			"envpilot.io/environment-id":   "pr-123",
+			"app.kubernetes.io/managed-by": "envplane",
+			"envplane.io/managed":          "true",
+			"envplane.io/project":          "checkout",
+			"envplane.io/environment-id":   "pr-123",
 		},
 	}
 	if !IsEnvPlaneManaged(resource, "checkout", "pr-123") {
@@ -87,7 +87,7 @@ func TestIsEnvPlaneManagedRequiresOwnershipLabels(t *testing.T) {
 	if IsEnvPlaneManaged(resource, "checkout", "pr-999") {
 		t.Fatalf("expected environment mismatch to reject resource")
 	}
-	if IsEnvPlaneManaged(domain.ResourceSnapshot{Kind: "Deployment", Namespace: "envpilot-pr-123", Name: "manual"}, "checkout", "pr-123") {
+	if IsEnvPlaneManaged(domain.ResourceSnapshot{Kind: "Deployment", Namespace: "envplane-pr-123", Name: "manual"}, "checkout", "pr-123") {
 		t.Fatalf("expected unlabeled resource to be rejected")
 	}
 }
@@ -97,35 +97,35 @@ func TestCleanupDeleteGuardSkipsUnlabeledDeploymentAndSecret(t *testing.T) {
 	resources := []domain.ResourceSnapshot{
 		{
 			Kind:      "Deployment",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "manual-orders",
 			Labels:    map[string]string{"app": "orders"},
 		},
 		{
 			Kind:      "Secret",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "manual-secret",
 			Labels:    map[string]string{"app": "orders"},
 		},
 		{
 			Kind:      "Deployment",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "orders",
 			Labels: map[string]string{
-				"app.kubernetes.io/managed-by": "envpilot",
-				"envpilot.io/managed":          "true",
-				"envpilot.io/project":          "checkout",
-				"envpilot.io/environment-id":   "pr-123",
+				"app.kubernetes.io/managed-by": "envplane",
+				"envplane.io/managed":          "true",
+				"envplane.io/project":          "checkout",
+				"envplane.io/environment-id":   "pr-123",
 			},
 		},
 		{
 			Kind:      "Secret",
-			Namespace: "envpilot-pr-123",
+			Namespace: "envplane-pr-123",
 			Name:      "orders-secret",
 			Labels: map[string]string{
-				"envpilot.io/managed":        "true",
-				"envpilot.io/project":        "checkout",
-				"envpilot.io/environment-id": "pr-123",
+				"envplane.io/managed":        "true",
+				"envplane.io/project":        "checkout",
+				"envplane.io/environment-id": "pr-123",
 			},
 		},
 	}
@@ -156,18 +156,18 @@ func TestCleanupDeleteGuardSkipsUnlabeledDeploymentAndSecret(t *testing.T) {
 func TestApplyGuardRejectsUnlabeledIngressAndAllowsEnvPlaneLabeled(t *testing.T) {
 	unlabeled := domain.ResourceSnapshot{
 		Kind:      "Ingress",
-		Namespace: "envpilot-pr-123",
+		Namespace: "envplane-pr-123",
 		Name:      "orders",
 		Labels:    map[string]string{"app": "orders"},
 	}
 	labeled := domain.ResourceSnapshot{
 		Kind:      "Ingress",
-		Namespace: "envpilot-pr-123",
+		Namespace: "envplane-pr-123",
 		Name:      "orders",
 		Labels: map[string]string{
-			"app.kubernetes.io/managed-by": "envpilot",
-			"envpilot.io/project":          "checkout",
-			"envpilot.io/environment-id":   "pr-123",
+			"app.kubernetes.io/managed-by": "envplane",
+			"envplane.io/project":          "checkout",
+			"envplane.io/environment-id":   "pr-123",
 		},
 	}
 

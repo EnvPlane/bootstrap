@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 type ResourceSelection struct {
@@ -190,7 +190,7 @@ func GenerateResourcePolicyTemplates(
 		"apiVersion": "v1",
 		"kind":       "ResourceQuota",
 		"metadata": map[string]any{
-			"name":      "envpilot-resource-quota",
+			"name":      "envplane-resource-quota",
 			"namespace": ns,
 		},
 		"spec": map[string]any{
@@ -211,7 +211,7 @@ func GenerateResourcePolicyTemplates(
 		"apiVersion": "v1",
 		"kind":       "LimitRange",
 		"metadata": map[string]any{
-			"name":      "envpilot-resource-limits",
+			"name":      "envplane-resource-limits",
 			"namespace": ns,
 		},
 		"spec": map[string]any{
@@ -236,13 +236,13 @@ func GenerateResourcePolicyTemplates(
 		{
 			Kind:      "LimitRange",
 			Namespace: ns,
-			Name:      "envpilot-resource-limits",
+			Name:      "envplane-resource-limits",
 			YAML:      marshalDeterministicYAML(limitRange),
 		},
 		{
 			Kind:      "ResourceQuota",
 			Namespace: ns,
-			Name:      "envpilot-resource-quota",
+			Name:      "envplane-resource-quota",
 			YAML:      marshalDeterministicYAML(resourceQuota),
 		},
 	}, nil
@@ -285,7 +285,7 @@ func GenerateNetworkPolicyTemplates(
 			"apiVersion": "networking.k8s.io/v1",
 			"kind":       "NetworkPolicy",
 			"metadata": map[string]any{
-				"name":      "envpilot-allow-base-to-feature",
+				"name":      "envplane-allow-base-to-feature",
 				"namespace": ns,
 			},
 			"spec": map[string]any{
@@ -302,7 +302,7 @@ func GenerateNetworkPolicyTemplates(
 		templates = append(templates, ManifestTemplate{
 			Kind:      "NetworkPolicy",
 			Namespace: ns,
-			Name:      "envpilot-allow-base-to-feature",
+			Name:      "envplane-allow-base-to-feature",
 			YAML:      marshalDeterministicYAML(manifest),
 		})
 	}
@@ -312,7 +312,7 @@ func GenerateNetworkPolicyTemplates(
 			"apiVersion": "networking.k8s.io/v1",
 			"kind":       "NetworkPolicy",
 			"metadata": map[string]any{
-				"name":      "envpilot-feature-egress",
+				"name":      "envplane-feature-egress",
 				"namespace": ns,
 			},
 			"spec": map[string]any{
@@ -333,7 +333,7 @@ func GenerateNetworkPolicyTemplates(
 		templates = append(templates, ManifestTemplate{
 			Kind:      "NetworkPolicy",
 			Namespace: ns,
-			Name:      "envpilot-feature-egress",
+			Name:      "envplane-feature-egress",
 			YAML:      marshalDeterministicYAML(manifest),
 		})
 	}
@@ -344,7 +344,7 @@ func GenerateNetworkPolicyTemplates(
 				"apiVersion": "networking.k8s.io/v1",
 				"kind":       "NetworkPolicy",
 				"metadata": map[string]any{
-					"name":      "envpilot-allow-feature-to-base",
+					"name":      "envplane-allow-feature-to-base",
 					"namespace": baseNamespace,
 				},
 				"spec": map[string]any{
@@ -363,7 +363,7 @@ func GenerateNetworkPolicyTemplates(
 			templates = append(templates, ManifestTemplate{
 				Kind:      "NetworkPolicy",
 				Namespace: baseNamespace,
-				Name:      "envpilot-allow-feature-to-base",
+				Name:      "envplane-allow-feature-to-base",
 				YAML:      marshalDeterministicYAML(manifest),
 			})
 		}
@@ -661,9 +661,9 @@ func addEnvPlaneMetadata(manifest map[string]any, labels map[string]string, anno
 	manifestLabels := ensureNestedStringMap(metadata, "labels")
 	manifestAnnotations := ensureNestedStringMap(metadata, "annotations")
 
-	manifestLabels["app.kubernetes.io/managed-by"] = "envpilot"
-	manifestLabels["envpilot.io/managed"] = "true"
-	manifestAnnotations["envpilot.io/generated-from-discovery"] = "true"
+	manifestLabels["app.kubernetes.io/managed-by"] = "envplane"
+	manifestLabels["envplane.io/managed"] = "true"
+	manifestAnnotations["envplane.io/generated-from-discovery"] = "true"
 
 	for key, value := range labels {
 		trimmedKey := strings.TrimSpace(key)
