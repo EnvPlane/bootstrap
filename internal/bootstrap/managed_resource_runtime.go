@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 type ManagedResourceRuntime struct {

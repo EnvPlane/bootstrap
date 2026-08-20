@@ -8,13 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 func TestKubernetesManagedResourceClientBlocksUnlabeledApplyUpdateAndDeleteForAllRunnerKinds(t *testing.T) {
 	for _, kind := range runnerManagedResourceKinds() {
 		t.Run(kind, func(t *testing.T) {
-			paths, err := kubernetesResourcePaths(kind, "envpilot-pr-123", "manual")
+			paths, err := kubernetesResourcePaths(kind, "envplane-pr-123", "manual")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -41,14 +41,14 @@ func TestKubernetesManagedResourceClientBlocksUnlabeledApplyUpdateAndDeleteForAl
 			defer server.Close()
 
 			client := kubernetesManagedClientForTest(server)
-			if err := client.Apply(context.Background(), resourceSnapshot(kind, "manual", envPilotLabels())); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
+			if err := client.Apply(context.Background(), resourceSnapshot(kind, "manual", envPlaneLabels())); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
 				t.Fatalf("unlabeled existing %s update should be rejected, got %v", kind, err)
 			}
 			if patchCalled {
 				t.Fatalf("unlabeled existing %s was patched", kind)
 			}
 
-			if err := client.Delete(context.Background(), kind, "envpilot-pr-123", "manual"); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
+			if err := client.Delete(context.Background(), kind, "envplane-pr-123", "manual"); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
 				t.Fatalf("unlabeled existing %s delete should be rejected, got %v", kind, err)
 			}
 			if deleteCalled {
@@ -61,7 +61,7 @@ func TestKubernetesManagedResourceClientBlocksUnlabeledApplyUpdateAndDeleteForAl
 func TestKubernetesManagedResourceClientAllowsEnvPlaneLabeledApplyUpdateAndDeleteForAllRunnerKinds(t *testing.T) {
 	for _, kind := range runnerManagedResourceKinds() {
 		t.Run(kind, func(t *testing.T) {
-			paths, err := kubernetesResourcePaths(kind, "envpilot-pr-123", "orders")
+			paths, err := kubernetesResourcePaths(kind, "envplane-pr-123", "orders")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -74,7 +74,7 @@ func TestKubernetesManagedResourceClientAllowsEnvPlaneLabeledApplyUpdateAndDelet
 				}
 				switch r.Method {
 				case http.MethodGet:
-					writeKubernetesManagedClientTestManifest(t, w, kind, "orders", envPilotLabels())
+					writeKubernetesManagedClientTestManifest(t, w, kind, "orders", envPlaneLabels())
 				case http.MethodPatch:
 					patchCalled = true
 					var payload map[string]any
@@ -93,14 +93,14 @@ func TestKubernetesManagedResourceClientAllowsEnvPlaneLabeledApplyUpdateAndDelet
 			defer server.Close()
 
 			client := kubernetesManagedClientForTest(server)
-			if err := client.Apply(context.Background(), resourceSnapshot(kind, "orders", envPilotLabels())); err != nil {
+			if err := client.Apply(context.Background(), resourceSnapshot(kind, "orders", envPlaneLabels())); err != nil {
 				t.Fatalf("EnvPlane-labeled existing %s update should be allowed: %v", kind, err)
 			}
 			if !patchCalled {
 				t.Fatalf("EnvPlane-labeled existing %s was not patched", kind)
 			}
 
-			if err := client.Delete(context.Background(), kind, "envpilot-pr-123", "orders"); err != nil {
+			if err := client.Delete(context.Background(), kind, "envplane-pr-123", "orders"); err != nil {
 				t.Fatalf("EnvPlane-labeled existing %s delete should be allowed: %v", kind, err)
 			}
 			if !deleteCalled {
@@ -113,7 +113,7 @@ func TestKubernetesManagedResourceClientAllowsEnvPlaneLabeledApplyUpdateAndDelet
 func TestKubernetesManagedResourceClientCreatesNewResourcesWithEnvPlaneOwnershipLabelsForAllRunnerKinds(t *testing.T) {
 	for _, kind := range runnerManagedResourceKinds() {
 		t.Run(kind, func(t *testing.T) {
-			paths, err := kubernetesResourcePaths(kind, "envpilot-pr-123", "orders")
+			paths, err := kubernetesResourcePaths(kind, "envplane-pr-123", "orders")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -148,7 +148,7 @@ func TestKubernetesManagedResourceClientCreatesNewResourcesWithEnvPlaneOwnership
 }
 
 func TestKubernetesManagedResourceClientDeleteAlwaysRequiresOwnershipLabelsEvenWithUnsafeCleanupConfig(t *testing.T) {
-	paths, err := kubernetesResourcePaths("Secret", "envpilot-pr-123", "manual")
+	paths, err := kubernetesResourcePaths("Secret", "envplane-pr-123", "manual")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestKubernetesManagedResourceClientDeleteAlwaysRequiresOwnershipLabelsEvenW
 		ProtectedNamespaces:       []string{"default"},
 		DeleteEnvPlaneLabeledOnly: false,
 	}
-	if err := client.Delete(context.Background(), "Secret", "envpilot-pr-123", "manual"); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
+	if err := client.Delete(context.Background(), "Secret", "envplane-pr-123", "manual"); !errors.Is(err, ErrResourceNotEnvPlaneManaged) {
 		t.Fatalf("unlabeled existing Secret delete should be rejected regardless of cleanup config, got %v", err)
 	}
 	if deleteCalled {
@@ -211,7 +211,7 @@ func writeKubernetesManagedClientTestManifest(t *testing.T, w http.ResponseWrite
 	w.Header().Set("Content-Type", "application/json")
 	payload := domain.ResourceSnapshot{
 		Kind:      kind,
-		Namespace: "envpilot-pr-123",
+		Namespace: "envplane-pr-123",
 		Name:      name,
 		Labels:    labels,
 	}
@@ -231,7 +231,7 @@ func assertKubernetesManagedClientOwnershipLabels(t *testing.T, manifest map[str
 		t.Fatalf("metadata.labels missing from manifest: %+v", manifest)
 	}
 	labels := stringMap(rawLabels)
-	expected := envPilotLabels()
+	expected := envPlaneLabels()
 	for key, value := range expected {
 		if labels[key] != value {
 			t.Fatalf("label %s = %q, want %q in %+v", key, labels[key], value, labels)

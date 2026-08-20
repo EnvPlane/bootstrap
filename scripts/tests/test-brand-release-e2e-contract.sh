@@ -6,14 +6,13 @@ script="$root/scripts/brand-release-e2e.sh"
 
 bash -n "$script"
 contract_output="$($script --contract 2>/dev/null)"
-[[ "$contract_output" == *"alias precedence contract is valid"* ]] || {
-  echo "canonical-wins/legacy-fallback executable contract failed" >&2
+[[ "$contract_output" == *"canonical input contract is valid"* ]] || {
+  echo "canonical input executable contract failed" >&2
   exit 1
 }
 for expected in \
   'ENVPLANE_E2E_CONTEXT' \
-  'ENVPILOT_E2E_CONTEXT' \
-  'canonical wins over legacy' \
+  'resolve canonical release inputs' \
   'published OCI artifacts' \
   'fresh install, runtime authentication, resource scan and Helm Direct bootstrap' \
   'phase log contains raw credential-shaped output' \

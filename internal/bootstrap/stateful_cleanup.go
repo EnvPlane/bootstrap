@@ -1,6 +1,6 @@
 package bootstrap
 
-import "github.com/envpilot/contracts/domain"
+import "github.com/envplane/contracts/domain"
 
 // ShouldDeleteStatefulResource is deliberately plan-driven. It can remove a
 // feature-owned target only; source PVCs, snapshots and databases are never

@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 type KubernetesManagedResourceClient struct {
@@ -71,7 +71,7 @@ func (c KubernetesManagedResourceClient) withOwnershipLabels(resource domain.Res
 	if resource.Labels == nil {
 		resource.Labels = map[string]string{}
 	}
-	resource.Labels[EnvPlaneManagedByLabel] = "envpilot"
+	resource.Labels[EnvPlaneManagedByLabel] = "envplane"
 	resource.Labels[EnvPlaneManagedLabel] = "true"
 	if strings.TrimSpace(c.ProjectID) != "" {
 		resource.Labels[EnvPlaneProjectLabel] = strings.TrimSpace(c.ProjectID)

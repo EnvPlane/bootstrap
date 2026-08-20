@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/envpilot/contracts/domain"
+	"github.com/envplane/contracts/domain"
 )
 
 func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
@@ -183,11 +183,11 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"Job/dev-base/cleanup":    {Include: true, Strategy: "override per PR"},
 	}
 	options := ManifestTemplateGeneratorOptions{
-		FeatureNamespaceTemplate: "envpilot-pr-{{ .PRNumber }}",
+		FeatureNamespaceTemplate: "envplane-pr-{{ .PRNumber }}",
 		CommitSHAPlaceholder:     "{{ .CommitSHA }}",
 		PreviewDomain:            "preview.example.com",
 		Labels: map[string]string{
-			"envpilot.io/project": "checkout",
+			"envplane.io/project": "checkout",
 		},
 		Annotations: map[string]string{
 			"team": "platform",
@@ -216,14 +216,14 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	}
 
 	deploymentYAML := byKind["Deployment"].YAML
-	if !strings.Contains(deploymentYAML, `namespace: "envpilot-pr-{{ .PRNumber }}"`) {
+	if !strings.Contains(deploymentYAML, `namespace: "envplane-pr-{{ .PRNumber }}"`) {
 		t.Fatalf("deployment namespace rewrite missing: %s", deploymentYAML)
 	}
 	if !strings.Contains(deploymentYAML, `image: "ghcr.io/acme/orders:{{ .CommitSHA }}"`) {
 		t.Fatalf("deployment image rewrite missing: %s", deploymentYAML)
 	}
-	if !strings.Contains(deploymentYAML, "envpilot.io/managed: true") {
-		t.Fatalf("deployment envpilot label missing: %s", deploymentYAML)
+	if !strings.Contains(deploymentYAML, "envplane.io/managed: true") {
+		t.Fatalf("deployment envplane label missing: %s", deploymentYAML)
 	}
 
 	expectedIngressYAML := "" +
@@ -231,14 +231,14 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"kind: Ingress\n" +
 		"metadata:\n" +
 		"  annotations:\n" +
-		"    envpilot.io/generated-from-discovery: true\n" +
+		"    envplane.io/generated-from-discovery: true\n" +
 		"    team: platform\n" +
 		"  labels:\n" +
-		"    app.kubernetes.io/managed-by: envpilot\n" +
-		"    envpilot.io/managed: true\n" +
-		"    envpilot.io/project: checkout\n" +
+		"    app.kubernetes.io/managed-by: envplane\n" +
+		"    envplane.io/managed: true\n" +
+		"    envplane.io/project: checkout\n" +
 		"  name: dev-base-orders\n" +
-		"  namespace: \"envpilot-pr-{{ .PRNumber }}\"\n" +
+		"  namespace: \"envplane-pr-{{ .PRNumber }}\"\n" +
 		"spec:\n" +
 		"  rules:\n" +
 		"    -\n" +
@@ -266,13 +266,13 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"kind: Namespace\n" +
 		"metadata:\n" +
 		"  annotations:\n" +
-		"    envpilot.io/generated-from-discovery: true\n" +
+		"    envplane.io/generated-from-discovery: true\n" +
 		"    team: platform\n" +
 		"  labels:\n" +
-		"    app.kubernetes.io/managed-by: envpilot\n" +
-		"    envpilot.io/managed: true\n" +
-		"    envpilot.io/project: checkout\n" +
-		"  name: \"envpilot-pr-{{ .PRNumber }}\"\n"
+		"    app.kubernetes.io/managed-by: envplane\n" +
+		"    envplane.io/managed: true\n" +
+		"    envplane.io/project: checkout\n" +
+		"  name: \"envplane-pr-{{ .PRNumber }}\"\n"
 	if byKind["Namespace"].YAML != expectedNamespaceYAML {
 		t.Fatalf("unexpected namespace yaml:\n%s", byKind["Namespace"].YAML)
 	}
@@ -298,7 +298,7 @@ func TestGenerateManifestTemplatesSkipsBaseStrategies(t *testing.T) {
 		"Service/dev-base/auth": {Include: true, Strategy: "use base"},
 	}
 	options := ManifestTemplateGeneratorOptions{
-		FeatureNamespaceTemplate: "envpilot-pr-{{ .PRNumber }}",
+		FeatureNamespaceTemplate: "envplane-pr-{{ .PRNumber }}",
 	}
 	items, err := GenerateManifestTemplates(snapshots, selections, options)
 	if err != nil {
@@ -317,8 +317,8 @@ func TestGenerateNetworkPolicyTemplatesForRestrictedMode(t *testing.T) {
 			EgressMode:     "restricted",
 			BaseNamespaces: []string{"dev-base"},
 		},
-		"envpilot-pr-{{ .PRNumber }}",
-		map[string]string{"envpilot.io/project": "checkout"},
+		"envplane-pr-{{ .PRNumber }}",
+		map[string]string{"envplane.io/project": "checkout"},
 		nil,
 	)
 	if err != nil {
@@ -331,14 +331,14 @@ func TestGenerateNetworkPolicyTemplatesForRestrictedMode(t *testing.T) {
 	for _, item := range items {
 		byName[item.Namespace+"/"+item.Name] = item
 	}
-	featureIngress := byName["envpilot-pr-{{ .PRNumber }}/envpilot-allow-base-to-feature"].YAML
+	featureIngress := byName["envplane-pr-{{ .PRNumber }}/envplane-allow-base-to-feature"].YAML
 	if !strings.Contains(featureIngress, "kubernetes.io/metadata.name: dev-base") {
 		t.Fatalf("feature ingress policy missing base namespace selector:\n%s", featureIngress)
 	}
-	if _, exists := byName["dev-base/envpilot-allow-feature-to-base"]; exists {
+	if _, exists := byName["dev-base/envplane-allow-feature-to-base"]; exists {
 		t.Fatalf("did not expect base namespace policy without explicit opt-in")
 	}
-	egress := byName["envpilot-pr-{{ .PRNumber }}/envpilot-feature-egress"].YAML
+	egress := byName["envplane-pr-{{ .PRNumber }}/envplane-feature-egress"].YAML
 	if !strings.Contains(egress, "k8s-app: kube-dns") {
 		t.Fatalf("restricted egress policy missing DNS rule:\n%s", egress)
 	}
@@ -356,7 +356,7 @@ func TestGenerateNetworkPolicyTemplatesIncludesBaseNamespacePoliciesWhenExplicit
 			BaseNamespaces:             []string{"dev-base"},
 			AllowBaseNamespacePolicies: true,
 		},
-		"envpilot-pr-{{ .PRNumber }}",
+		"envplane-pr-{{ .PRNumber }}",
 		nil,
 		nil,
 	)
@@ -370,8 +370,8 @@ func TestGenerateNetworkPolicyTemplatesIncludesBaseNamespacePoliciesWhenExplicit
 	for _, item := range items {
 		byName[item.Namespace+"/"+item.Name] = item
 	}
-	baseIngress := byName["dev-base/envpilot-allow-feature-to-base"].YAML
-	if !strings.Contains(baseIngress, `kubernetes.io/metadata.name: "envpilot-pr-{{ .PRNumber }}"`) {
+	baseIngress := byName["dev-base/envplane-allow-feature-to-base"].YAML
+	if !strings.Contains(baseIngress, `kubernetes.io/metadata.name: "envplane-pr-{{ .PRNumber }}"`) {
 		t.Fatalf("base ingress policy missing feature namespace selector:\n%s", baseIngress)
 	}
 }
@@ -384,7 +384,7 @@ func TestGenerateNetworkPolicyTemplatesForDenyAllEgress(t *testing.T) {
 			EgressMode:     "deny all",
 			BaseNamespaces: []string{"dev-base"},
 		},
-		"envpilot-pr-{{ .PRNumber }}",
+		"envplane-pr-{{ .PRNumber }}",
 		nil,
 		nil,
 	)
@@ -394,7 +394,7 @@ func TestGenerateNetworkPolicyTemplatesForDenyAllEgress(t *testing.T) {
 	if len(items) != 1 {
 		t.Fatalf("expected one egress policy, got %d", len(items))
 	}
-	if items[0].Name != "envpilot-feature-egress" {
+	if items[0].Name != "envplane-feature-egress" {
 		t.Fatalf("expected egress policy, got %q", items[0].Name)
 	}
 	if !strings.Contains(items[0].YAML, "egress: []") {
@@ -409,7 +409,7 @@ func TestGenerateNetworkPolicyTemplatesRejectsInvalidMode(t *testing.T) {
 			EgressMode:     "invalid",
 			BaseNamespaces: []string{"dev-base"},
 		},
-		"envpilot-pr-{{ .PRNumber }}",
+		"envplane-pr-{{ .PRNumber }}",
 		nil,
 		nil,
 	)
