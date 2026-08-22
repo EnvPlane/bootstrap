@@ -425,3 +425,14 @@ func extractYAML(items []ManifestTemplate) []string {
 	}
 	return result
 }
+
+func TestQuoteYAMLStringProtectsSpecialScalarValues(t *testing.T) {
+	for _, value := range []string{"-", "?", ":", "  value"} {
+		if got := quoteYAMLString(value); got == value {
+			t.Fatalf("quoteYAMLString(%q) returned an unsafe plain scalar", value)
+		}
+	}
+	if got := quoteYAMLString("plain-value"); got != "plain-value" {
+		t.Fatalf("quoteYAMLString changed safe scalar: %q", got)
+	}
+}

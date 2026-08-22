@@ -862,8 +862,14 @@ func quoteYAMLString(value string) string {
 }
 
 func isPlainYAMLString(value string) bool {
+	if strings.TrimSpace(value) != value {
+		return false
+	}
 	if strings.HasPrefix(value, "{{") && strings.HasSuffix(value, "}}") {
 		return true
+	}
+	if value == "-" || value == "?" || value == ":" {
+		return false
 	}
 	for _, char := range value {
 		switch char {
