@@ -84,6 +84,12 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 				"metadata": map[string]any{
 					"name":      "orders-data",
 					"namespace": "dev-base",
+					"annotations": map[string]any{
+						"pv.kubernetes.io/bind-completed":               "yes",
+						"pv.kubernetes.io/bound-by-controller":          "yes",
+						"volume.beta.kubernetes.io/storage-provisioner": "rancher.io/local-path",
+						"volume.kubernetes.io/selected-node":            "desktop-control-plane",
+					},
 				},
 				"spec": map[string]any{
 					"accessModes": []any{"ReadWriteOnce"},
@@ -247,8 +253,11 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	if !strings.Contains(deploymentYAML, `envplane.io/managed: "true"`) {
 		t.Fatalf("deployment envplane label missing: %s", deploymentYAML)
 	}
-	if pvcYAML := byKind["PersistentVolumeClaim"].YAML; strings.Contains(pvcYAML, "volumeName:") {
-		t.Fatalf("feature PVC must not retain the source volume binding: %s", pvcYAML)
+	pvcYAML := byKind["PersistentVolumeClaim"].YAML
+	for _, sourceBindingField := range []string{"volumeName:", "bind-completed", "bound-by-controller", "storage-provisioner", "selected-node"} {
+		if strings.Contains(pvcYAML, sourceBindingField) {
+			t.Fatalf("feature PVC must not retain source binding field %q: %s", sourceBindingField, pvcYAML)
+		}
 	}
 	serviceYAML := byKind["Service"].YAML
 	for _, allocatedField := range []string{"clusterIP:", "clusterIPs:", "ipFamilies:", "ipFamilyPolicy:", "nodePort:"} {

@@ -457,6 +457,20 @@ func detachPersistentVolumeClaim(manifest map[string]any, kind string) {
 		return
 	}
 	delete(spec, "volumeName")
+	metadata := ensureStringAnyMap(manifest, "metadata")
+	annotations, ok := metadata["annotations"].(map[string]any)
+	if !ok {
+		return
+	}
+	for _, key := range []string{
+		"pv.kubernetes.io/bind-completed",
+		"pv.kubernetes.io/bound-by-controller",
+		"volume.beta.kubernetes.io/storage-provisioner",
+		"volume.kubernetes.io/selected-node",
+		"volume.kubernetes.io/storage-provisioner",
+	} {
+		delete(annotations, key)
+	}
 }
 
 // detachServiceAllocation removes values allocated by the source cluster. A
