@@ -106,6 +106,7 @@ func GenerateManifestTemplates(
 		}
 		rewriteManifestNamespace(manifest, snapshot.Kind, featureNamespace)
 		detachPersistentVolumeClaim(manifest, snapshot.Kind)
+		detachServiceAllocation(manifest, snapshot.Kind)
 		rewriteManifestImages(manifest, snapshot.Kind, commitPlaceholder, strings.TrimSpace(options.ImagePattern))
 		rewriteIngressHosts(manifest, snapshot, strings.TrimSpace(options.PreviewDomain), strings.TrimSpace(options.HostPatternTemplate))
 		addEnvPlaneMetadata(manifest, options.Labels, options.Annotations)
@@ -456,6 +457,32 @@ func detachPersistentVolumeClaim(manifest map[string]any, kind string) {
 		return
 	}
 	delete(spec, "volumeName")
+}
+
+// detachServiceAllocation removes values allocated by the source cluster. A
+// Service copied into a feature namespace must receive fresh ClusterIP and
+// NodePort allocations; reusing them conflicts with the source Service and
+// prevents Flux from creating the environment.
+func detachServiceAllocation(manifest map[string]any, kind string) {
+	if kind != "Service" {
+		return
+	}
+	spec, ok := manifest["spec"].(map[string]any)
+	if !ok {
+		return
+	}
+	for _, key := range []string{"clusterIP", "clusterIPs", "ipFamilies", "ipFamilyPolicy", "healthCheckNodePort"} {
+		delete(spec, key)
+	}
+	ports, ok := spec["ports"].([]any)
+	if !ok {
+		return
+	}
+	for _, port := range ports {
+		if portMap, ok := port.(map[string]any); ok {
+			delete(portMap, "nodePort")
+		}
+	}
 }
 
 func rewriteManifestImages(manifest map[string]any, kind string, commitPlaceholder string, imagePattern string) {

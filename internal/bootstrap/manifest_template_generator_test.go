@@ -59,11 +59,16 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 					"namespace": "dev-base",
 				},
 				"spec": map[string]any{
+					"clusterIP":      "10.96.10.20",
+					"clusterIPs":     []any{"10.96.10.20"},
+					"ipFamilies":     []any{"IPv4"},
+					"ipFamilyPolicy": "SingleStack",
 					"ports": []any{
 						map[string]any{
 							"name":       "http",
 							"port":       float64(80),
 							"targetPort": float64(8080),
+							"nodePort":   float64(30080),
 						},
 					},
 				},
@@ -244,6 +249,12 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	}
 	if pvcYAML := byKind["PersistentVolumeClaim"].YAML; strings.Contains(pvcYAML, "volumeName:") {
 		t.Fatalf("feature PVC must not retain the source volume binding: %s", pvcYAML)
+	}
+	serviceYAML := byKind["Service"].YAML
+	for _, allocatedField := range []string{"clusterIP:", "clusterIPs:", "ipFamilies:", "ipFamilyPolicy:", "nodePort:"} {
+		if strings.Contains(serviceYAML, allocatedField) {
+			t.Fatalf("feature Service must not retain source allocation %q: %s", allocatedField, serviceYAML)
+		}
 	}
 
 	expectedIngressYAML := "" +
