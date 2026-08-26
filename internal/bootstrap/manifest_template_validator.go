@@ -26,6 +26,9 @@ type ManifestTemplateValidationResult struct {
 var (
 	templateExpressionPattern = regexp.MustCompile(`\{\{[^}]*\}\}`)
 	templateTokenPattern      = regexp.MustCompile(`^\{\{\s*\.([A-Za-z0-9_]+)\s*\}\}$`)
+	templateIfTokenPattern    = regexp.MustCompile(`^\{\{\s*if\s+\.([A-Za-z0-9_]+)\s*\}\}$`)
+	templateElseTokenPattern  = regexp.MustCompile(`^\{\{\s*else\s*\}\}$`)
+	templateEndTokenPattern   = regexp.MustCompile(`^\{\{\s*end\s*\}\}$`)
 	yamlLinePattern           = regexp.MustCompile(`line\s+([0-9]+)`)
 )
 
@@ -106,32 +109,47 @@ func validateTemplateVariables(file string, kind string, yamlBody string) []Mani
 	expressions := templateExpressionPattern.FindAllString(yamlBody, -1)
 	hasPRNumber := false
 	hasCommitSHA := false
+	conditionDepth := 0
 	for _, expression := range expressions {
 		match := templateTokenPattern.FindStringSubmatch(expression)
-		if len(match) != 2 {
-			issues = append(issues, ManifestTemplateValidationIssue{
-				File:    file,
-				Line:    lineOfFirst(yamlBody, expression),
-				Code:    "template.syntax",
-				Message: fmt.Sprintf("unsupported template expression %q", expression),
-			})
+		if len(match) == 2 {
+			name := match[1]
+			hasPRNumber = hasPRNumber || name == "PRNumber"
+			hasCommitSHA = hasCommitSHA || name == "CommitSHA"
+			if _, ok := allowedTemplateVariables[name]; !ok {
+				issues = append(issues, unsupportedTemplateVariableIssue(file, yamlBody, expression, name))
+			}
 			continue
 		}
-		name := match[1]
-		if name == "PRNumber" {
-			hasPRNumber = true
+		if match := templateIfTokenPattern.FindStringSubmatch(expression); len(match) == 2 {
+			name := match[1]
+			hasPRNumber = hasPRNumber || name == "PRNumber"
+			hasCommitSHA = hasCommitSHA || name == "CommitSHA"
+			if _, ok := allowedTemplateVariables[name]; !ok {
+				issues = append(issues, unsupportedTemplateVariableIssue(file, yamlBody, expression, name))
+				continue
+			}
+			conditionDepth++
+			continue
 		}
-		if name == "CommitSHA" {
-			hasCommitSHA = true
+		if templateElseTokenPattern.MatchString(expression) {
+			if conditionDepth == 0 {
+				issues = append(issues, unsupportedTemplateExpressionIssue(file, yamlBody, expression))
+			}
+			continue
 		}
-		if _, ok := allowedTemplateVariables[name]; !ok {
-			issues = append(issues, ManifestTemplateValidationIssue{
-				File:    file,
-				Line:    lineOfFirst(yamlBody, expression),
-				Code:    "template.variable",
-				Message: fmt.Sprintf("unsupported EnvPlane variable %q", name),
-			})
+		if templateEndTokenPattern.MatchString(expression) {
+			if conditionDepth == 0 {
+				issues = append(issues, unsupportedTemplateExpressionIssue(file, yamlBody, expression))
+				continue
+			}
+			conditionDepth--
+			continue
 		}
+		issues = append(issues, unsupportedTemplateExpressionIssue(file, yamlBody, expression))
+	}
+	if conditionDepth != 0 {
+		issues = append(issues, ManifestTemplateValidationIssue{File: file, Line: 1, Code: "template.syntax", Message: "unterminated template if block"})
 	}
 
 	if !hasPRNumber {
@@ -151,6 +169,14 @@ func validateTemplateVariables(file string, kind string, yamlBody string) []Mani
 		})
 	}
 	return issues
+}
+
+func unsupportedTemplateVariableIssue(file, yamlBody, expression, name string) ManifestTemplateValidationIssue {
+	return ManifestTemplateValidationIssue{File: file, Line: lineOfFirst(yamlBody, expression), Code: "template.variable", Message: fmt.Sprintf("unsupported EnvPlane variable %q", name)}
+}
+
+func unsupportedTemplateExpressionIssue(file, yamlBody, expression string) ManifestTemplateValidationIssue {
+	return ManifestTemplateValidationIssue{File: file, Line: lineOfFirst(yamlBody, expression), Code: "template.syntax", Message: fmt.Sprintf("unsupported template expression %q", expression)}
 }
 
 func validateKubernetesSchema(file string, expectedKind string, root *yaml.Node) []ManifestTemplateValidationIssue {

@@ -136,3 +136,25 @@ spec:
 		t.Fatalf("expected valid result, got %+v", result.Issues)
 	}
 }
+
+func TestValidateManifestTemplatesAcceptsCommitSHAFallbackBlock(t *testing.T) {
+	result := ValidateManifestTemplates([]ManifestTemplate{{
+		Kind:      "Deployment",
+		Namespace: "envplane-pr-{{ .PRNumber }}",
+		Name:      "orders",
+		YAML: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+  namespace: envplane-pr-{{ .PRNumber }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: orders
+          image: "ghcr.io/acme/orders:{{ if .CommitSHA }}{{ .CommitSHA }}{{ else }}main{{ end }}"`,
+	}})
+	if !result.Valid {
+		t.Fatalf("expected valid conditional commit SHA template, got %+v", result.Issues)
+	}
+}
