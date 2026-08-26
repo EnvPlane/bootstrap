@@ -105,6 +105,7 @@ func GenerateManifestTemplates(
 			continue
 		}
 		rewriteManifestNamespace(manifest, snapshot.Kind, featureNamespace)
+		detachPersistentVolumeClaim(manifest, snapshot.Kind)
 		rewriteManifestImages(manifest, snapshot.Kind, commitPlaceholder, strings.TrimSpace(options.ImagePattern))
 		rewriteIngressHosts(manifest, snapshot, strings.TrimSpace(options.PreviewDomain), strings.TrimSpace(options.HostPatternTemplate))
 		addEnvPlaneMetadata(manifest, options.Labels, options.Annotations)
@@ -441,6 +442,22 @@ func rewriteManifestNamespace(manifest map[string]any, kind string, featureNames
 	metadata["namespace"] = featureNamespace
 }
 
+// detachPersistentVolumeClaim prevents a feature namespace from retaining the
+// source claim's binding. A PersistentVolume is cluster-scoped, so copying
+// spec.volumeName into a new namespace produces a Lost claim as soon as the
+// original volume is reclaimed. Stateful-data materialization is handled by
+// the explicit project strategy; the rendered PVC must remain unbound.
+func detachPersistentVolumeClaim(manifest map[string]any, kind string) {
+	if kind != "PersistentVolumeClaim" {
+		return
+	}
+	spec, ok := manifest["spec"].(map[string]any)
+	if !ok {
+		return
+	}
+	delete(spec, "volumeName")
+}
+
 func rewriteManifestImages(manifest map[string]any, kind string, commitPlaceholder string, imagePattern string) {
 	if kind != "Deployment" {
 		return
@@ -485,7 +502,11 @@ func rewriteContainerImageSlice(spec map[string]any, key string, commitPlacehold
 			container["image"] = rewritten
 			continue
 		}
-		container["image"] = repository + ":" + commitPlaceholder
+		// Full environments can be created manually before a webhook supplies
+		// a commit SHA. Keep the scanned image tag in that case; otherwise the
+		// rendered image ends with ':' and Kubernetes rejects it. Webhook-driven
+		// environments continue to use the immutable commit-derived tag.
+		container["image"] = repository + ":{{ if .CommitSHA }}" + commitPlaceholder + "{{ else }}" + imageTag(image) + "{{ end }}"
 	}
 }
 
@@ -503,6 +524,22 @@ func imageRepository(image string) string {
 		return trimmed[:lastColon]
 	}
 	return trimmed
+}
+
+func imageTag(image string) string {
+	trimmed := strings.TrimSpace(image)
+	if trimmed == "" {
+		return "latest"
+	}
+	if strings.Contains(trimmed, "@") {
+		return "latest"
+	}
+	lastSlash := strings.LastIndex(trimmed, "/")
+	lastColon := strings.LastIndex(trimmed, ":")
+	if lastColon > lastSlash && lastColon+1 < len(trimmed) {
+		return trimmed[lastColon+1:]
+	}
+	return "latest"
 }
 
 func rewriteIngressHosts(manifest map[string]any, snapshot domain.ResourceSnapshot, previewDomain string, hostPatternTemplate string) {

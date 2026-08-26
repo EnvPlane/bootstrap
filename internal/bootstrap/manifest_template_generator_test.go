@@ -70,6 +70,23 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 			},
 		},
 		{
+			Kind:      "PersistentVolumeClaim",
+			Namespace: "dev-base",
+			Name:      "orders-data",
+			Manifest: map[string]any{
+				"apiVersion": "v1",
+				"kind":       "PersistentVolumeClaim",
+				"metadata": map[string]any{
+					"name":      "orders-data",
+					"namespace": "dev-base",
+				},
+				"spec": map[string]any{
+					"accessModes": []any{"ReadWriteOnce"},
+					"volumeName":  "pvc-source-volume",
+				},
+			},
+		},
+		{
 			Kind:      "Ingress",
 			Namespace: "dev-base",
 			Name:      "orders",
@@ -219,11 +236,14 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	if !strings.Contains(deploymentYAML, `namespace: "envplane-pr-{{ .PRNumber }}"`) {
 		t.Fatalf("deployment namespace rewrite missing: %s", deploymentYAML)
 	}
-	if !strings.Contains(deploymentYAML, `image: "ghcr.io/acme/orders:{{ .CommitSHA }}"`) {
+	if !strings.Contains(deploymentYAML, `image: "ghcr.io/acme/orders:{{ if .CommitSHA }}{{ .CommitSHA }}{{ else }}abc123{{ end }}"`) {
 		t.Fatalf("deployment image rewrite missing: %s", deploymentYAML)
 	}
 	if !strings.Contains(deploymentYAML, "envplane.io/managed: true") {
 		t.Fatalf("deployment envplane label missing: %s", deploymentYAML)
+	}
+	if pvcYAML := byKind["PersistentVolumeClaim"].YAML; strings.Contains(pvcYAML, "volumeName:") {
+		t.Fatalf("feature PVC must not retain the source volume binding: %s", pvcYAML)
 	}
 
 	expectedIngressYAML := "" +
