@@ -244,7 +244,7 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	if !strings.Contains(deploymentYAML, `image: "ghcr.io/acme/orders:{{ if .CommitSHA }}{{ .CommitSHA }}{{ else }}abc123{{ end }}"`) {
 		t.Fatalf("deployment image rewrite missing: %s", deploymentYAML)
 	}
-	if !strings.Contains(deploymentYAML, "envplane.io/managed: true") {
+	if !strings.Contains(deploymentYAML, `envplane.io/managed: "true"`) {
 		t.Fatalf("deployment envplane label missing: %s", deploymentYAML)
 	}
 	if pvcYAML := byKind["PersistentVolumeClaim"].YAML; strings.Contains(pvcYAML, "volumeName:") {
@@ -262,11 +262,11 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"kind: Ingress\n" +
 		"metadata:\n" +
 		"  annotations:\n" +
-		"    envplane.io/generated-from-discovery: true\n" +
+		"    envplane.io/generated-from-discovery: \"true\"\n" +
 		"    team: platform\n" +
 		"  labels:\n" +
 		"    app.kubernetes.io/managed-by: envplane\n" +
-		"    envplane.io/managed: true\n" +
+		"    envplane.io/managed: \"true\"\n" +
 		"    envplane.io/project: checkout\n" +
 		"  name: dev-base-orders\n" +
 		"  namespace: \"envplane-pr-{{ .PRNumber }}\"\n" +
@@ -297,11 +297,11 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 		"kind: Namespace\n" +
 		"metadata:\n" +
 		"  annotations:\n" +
-		"    envplane.io/generated-from-discovery: true\n" +
+		"    envplane.io/generated-from-discovery: \"true\"\n" +
 		"    team: platform\n" +
 		"  labels:\n" +
 		"    app.kubernetes.io/managed-by: envplane\n" +
-		"    envplane.io/managed: true\n" +
+		"    envplane.io/managed: \"true\"\n" +
 		"    envplane.io/project: checkout\n" +
 		"  name: \"envplane-pr-{{ .PRNumber }}\"\n"
 	if byKind["Namespace"].YAML != expectedNamespaceYAML {
@@ -458,7 +458,7 @@ func extractYAML(items []ManifestTemplate) []string {
 }
 
 func TestQuoteYAMLStringProtectsSpecialScalarValues(t *testing.T) {
-	for _, value := range []string{"-", "?", ":", "  value"} {
+	for _, value := range []string{"-", "?", ":", "  value", "true", "FALSE", "null", "~"} {
 		if got := quoteYAMLString(value); got == value {
 			t.Fatalf("quoteYAMLString(%q) returned an unsafe plain scalar", value)
 		}

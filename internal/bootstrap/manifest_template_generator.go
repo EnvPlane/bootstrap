@@ -935,6 +935,12 @@ func isPlainYAMLString(value string) bool {
 	if value == "-" || value == "?" || value == ":" {
 		return false
 	}
+	// Metadata labels and annotations are strings. Keep YAML scalar-like text
+	// quoted so Kubernetes never receives a boolean or null value.
+	lower := strings.ToLower(value)
+	if lower == "true" || lower == "false" || lower == "null" || value == "~" {
+		return false
+	}
 	for _, char := range value {
 		switch char {
 		case ':', '{', '}', '[', ']', ',', '#', '&', '*', '!', '|', '>', '\'', '"', '%', '@', '`':
