@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -952,7 +953,10 @@ func isPlainYAMLString(value string) bool {
 	// Metadata labels and annotations are strings. Keep YAML scalar-like text
 	// quoted so Kubernetes never receives a boolean or null value.
 	lower := strings.ToLower(value)
-	if lower == "true" || lower == "false" || lower == "null" || value == "~" {
+	if lower == "true" || lower == "false" || lower == "null" || lower == "yes" || lower == "no" || lower == "on" || lower == "off" || lower == "y" || lower == "n" || value == "~" {
+		return false
+	}
+	if yamlNumericStringPattern.MatchString(value) || yamlBaseNumericStringPattern.MatchString(value) || yamlSpecialFloatStringPattern.MatchString(lower) {
 		return false
 	}
 	for _, char := range value {
@@ -966,6 +970,12 @@ func isPlainYAMLString(value string) bool {
 	}
 	return true
 }
+
+var (
+	yamlNumericStringPattern      = regexp.MustCompile(`^[+-]?(?:(?:0|[1-9][0-9_]*)(?:\.[0-9_]*)?|\.[0-9_]+)(?:[eE][+-]?[0-9_]+)?$`)
+	yamlBaseNumericStringPattern  = regexp.MustCompile(`^[+-]?0(?:[bBxXoO][0-9a-fA-F_]+|[0-7_]+)$`)
+	yamlSpecialFloatStringPattern = regexp.MustCompile(`^[+-]?\.(?:inf|nan)$`)
+)
 
 func asString(value any) string {
 	switch typed := value.(type) {
