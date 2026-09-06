@@ -467,7 +467,12 @@ func extractYAML(items []ManifestTemplate) []string {
 }
 
 func TestQuoteYAMLStringProtectsSpecialScalarValues(t *testing.T) {
-	for _, value := range []string{"-", "?", ":", "  value", "true", "FALSE", "null", "~"} {
+	for _, value := range []string{
+		"-", "?", ":", "  value", "true", "FALSE", "null", "~",
+		"123", "-123", "+123", "1.0", "-.5", "1.", "1e6", "-2.5E-3",
+		"0x1A", "0o755", "0b1010", "0123", ".inf", "-.NAN",
+		"yes", "NO", "on", "Off", "y", "N",
+	} {
 		if got := quoteYAMLString(value); got == value {
 			t.Fatalf("quoteYAMLString(%q) returned an unsafe plain scalar", value)
 		}
