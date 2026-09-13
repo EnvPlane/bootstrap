@@ -69,6 +69,26 @@ spec:
 	}
 }
 
+func TestValidateManifestTemplatesAcceptsComponentImageVariable(t *testing.T) {
+	result := ValidateManifestTemplates([]ManifestTemplate{{
+		Kind: "Deployment", Namespace: "envplane-pr-{{ .PRNumber }}", Name: "frontend",
+		YAML: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: envplane-pr-{{ .PRNumber }}
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .ComponentImageFrontend }}"`,
+	}})
+	if !result.Valid {
+		t.Fatalf("component image variable should be valid, got %+v", result.Issues)
+	}
+}
+
 func TestValidateManifestTemplatesRejectsSchemaError(t *testing.T) {
 	result := ValidateManifestTemplates([]ManifestTemplate{
 		{
