@@ -51,7 +51,7 @@ func allowedTemplateVariable(name string) bool {
 		return false
 	}
 	for _, char := range name[len("ComponentImage"):] {
-		if !(char >= 'A' && char <= 'Z') && !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9') && char != '_' {
+		if (char < 'A' || char > 'Z') && (char < 'a' || char > 'z') && (char < '0' || char > '9') && char != '_' {
 			return false
 		}
 	}
