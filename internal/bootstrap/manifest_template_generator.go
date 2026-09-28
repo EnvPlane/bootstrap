@@ -397,7 +397,12 @@ func shouldGenerateTemplate(snapshot domain.ResourceSnapshot, selections map[str
 	switch strategy {
 	case "", "override per pr", "clone":
 		return true
-	case "use base", "reference", "mock", "ignore", "external dependency":
+	case "mock":
+		// A mocked PVC is a new, feature-namespace-local claim. It must be
+		// rendered so workloads that mount the claim can schedule; the normal
+		// PVC rewrite removes every source-volume binding before it is emitted.
+		return snapshot.Kind == "PersistentVolumeClaim"
+	case "use base", "reference", "ignore", "external dependency":
 		return false
 	default:
 		return true

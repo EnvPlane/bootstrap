@@ -318,6 +318,33 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	}
 }
 
+func TestGenerateManifestTemplatesMaterializesMockPVC(t *testing.T) {
+	snapshots := []domain.ResourceSnapshot{{
+		Kind:      "PersistentVolumeClaim",
+		Namespace: "app-base",
+		Name:      "backend-data",
+		Manifest: map[string]any{
+			"apiVersion": "v1",
+			"kind":       "PersistentVolumeClaim",
+			"metadata":   map[string]any{"name": "backend-data", "namespace": "app-base"},
+			"spec":       map[string]any{"accessModes": []any{"ReadWriteOnce"}, "volumeName": "source-volume"},
+		},
+	}}
+
+	templates, err := GenerateManifestTemplates(snapshots, map[string]ResourceSelection{
+		"PersistentVolumeClaim/app-base/backend-data": {Include: true, Strategy: "mock"},
+	}, ManifestTemplateGeneratorOptions{FeatureNamespaceTemplate: "envplane-pr-{{ .PRNumber }}"})
+	if err != nil {
+		t.Fatalf("generate mock PVC: %v", err)
+	}
+	if len(templates) != 1 {
+		t.Fatalf("templates = %#v", templates)
+	}
+	if !strings.Contains(templates[0].YAML, `namespace: "envplane-pr-{{ .PRNumber }}"`) || strings.Contains(templates[0].YAML, "volumeName:") {
+		t.Fatalf("mock PVC must be a new feature claim: %s", templates[0].YAML)
+	}
+}
+
 func TestGenerateManifestTemplatesSkipsBaseStrategies(t *testing.T) {
 	snapshots := []domain.ResourceSnapshot{
 		{
