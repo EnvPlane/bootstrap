@@ -327,7 +327,13 @@ func TestGenerateManifestTemplatesMaterializesMockPVC(t *testing.T) {
 			"apiVersion": "v1",
 			"kind":       "PersistentVolumeClaim",
 			"metadata":   map[string]any{"name": "backend-data", "namespace": "app-base"},
-			"spec":       map[string]any{"accessModes": []any{"ReadWriteOnce"}, "volumeName": "source-volume"},
+			"spec": map[string]any{
+				"accessModes": []any{"ReadWriteOnce"}, "volumeName": "source-volume",
+				"storageClassName": "standard", "resources": map[string]any{"requests": map[string]any{"storage": "1Gi"}},
+				"dataSource":    map[string]any{"kind": "VolumeSnapshot", "name": "source-snapshot"},
+				"dataSourceRef": map[string]any{"kind": "PersistentVolumeClaim", "name": "source-claim"},
+				"selector":      map[string]any{"matchLabels": map[string]any{"source": "production"}},
+			},
 		},
 	}}
 
@@ -342,6 +348,19 @@ func TestGenerateManifestTemplatesMaterializesMockPVC(t *testing.T) {
 	}
 	if !strings.Contains(templates[0].YAML, `namespace: "envplane-pr-{{ .PRNumber }}"`) || strings.Contains(templates[0].YAML, "volumeName:") {
 		t.Fatalf("mock PVC must be a new feature claim: %s", templates[0].YAML)
+	}
+	for _, forbidden := range []string{"dataSource:", "dataSourceRef:", "selector:", "source-snapshot", "source-claim"} {
+		if strings.Contains(templates[0].YAML, forbidden) {
+			t.Fatalf("empty mock PVC retained %q: %s", forbidden, templates[0].YAML)
+		}
+	}
+	for _, required := range []string{"standard", "1Gi", "ReadWriteOnce"} {
+		if !strings.Contains(templates[0].YAML, required) {
+			t.Fatalf("mock PVC lost storage setting %q", required)
+		}
+	}
+	if _, ok := snapshots[0].Manifest["spec"].(map[string]any)["dataSource"]; !ok {
+		t.Fatal("source PVC manifest was mutated")
 	}
 }
 
