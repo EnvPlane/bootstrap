@@ -107,6 +107,15 @@ func GenerateManifestTemplates(
 		}
 		rewriteManifestNamespace(manifest, snapshot.Kind, featureNamespace)
 		detachPersistentVolumeClaim(manifest, snapshot.Kind)
+		if selection, ok := selections[ResourceSnapshotKey(snapshot)]; ok && snapshot.Kind == "PersistentVolumeClaim" && strings.EqualFold(strings.TrimSpace(selection.Strategy), "mock") {
+			// Empty feature storage must never restore a snapshot, clone a claim,
+			// or select an existing persistent volume from the source manifest.
+			if spec, ok := manifest["spec"].(map[string]any); ok {
+				delete(spec, "dataSource")
+				delete(spec, "dataSourceRef")
+				delete(spec, "selector")
+			}
+		}
 		detachServiceAllocation(manifest, snapshot.Kind)
 		rewriteManifestImages(manifest, snapshot.Kind, commitPlaceholder, strings.TrimSpace(options.ImagePattern))
 		rewriteIngressHosts(manifest, snapshot, strings.TrimSpace(options.PreviewDomain), strings.TrimSpace(options.HostPatternTemplate))
