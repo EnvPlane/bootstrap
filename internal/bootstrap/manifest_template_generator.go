@@ -562,7 +562,7 @@ func rewriteContainerImageSlice(spec map[string]any, key string, commitPlacehold
 		// a commit SHA. Keep the scanned image tag in that case; otherwise the
 		// rendered image ends with ':' and Kubernetes rejects it. Webhook-driven
 		// environments continue to use the immutable commit-derived tag.
-		container["image"] = repository + ":{{ if .CommitSHA }}" + commitPlaceholder + "{{ else }}" + imageTag(image) + "{{ end }}"
+		container["image"] = "{{ if .CommitSHA }}" + repository + ":" + commitPlaceholder + "{{ else }}" + image + "{{ end }}"
 	}
 }
 
@@ -580,22 +580,6 @@ func imageRepository(image string) string {
 		return trimmed[:lastColon]
 	}
 	return trimmed
-}
-
-func imageTag(image string) string {
-	trimmed := strings.TrimSpace(image)
-	if trimmed == "" {
-		return "latest"
-	}
-	if strings.Contains(trimmed, "@") {
-		return "latest"
-	}
-	lastSlash := strings.LastIndex(trimmed, "/")
-	lastColon := strings.LastIndex(trimmed, ":")
-	if lastColon > lastSlash && lastColon+1 < len(trimmed) {
-		return trimmed[lastColon+1:]
-	}
-	return "latest"
 }
 
 func rewriteIngressHosts(manifest map[string]any, snapshot domain.ResourceSnapshot, previewDomain string, hostPatternTemplate string) {
@@ -958,7 +942,7 @@ func isPlainYAMLString(value string) bool {
 	if strings.TrimSpace(value) != value {
 		return false
 	}
-	if strings.HasPrefix(value, "{{") && strings.HasSuffix(value, "}}") {
+	if strings.HasPrefix(value, "{{") && strings.HasSuffix(value, "}}") && !strings.HasPrefix(value, "{{ if ") {
 		return true
 	}
 	if value == "-" || value == "?" || value == ":" {

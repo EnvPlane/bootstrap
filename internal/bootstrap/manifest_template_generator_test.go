@@ -247,7 +247,7 @@ func TestGenerateManifestTemplatesRewritesAndIsDeterministic(t *testing.T) {
 	if !strings.Contains(deploymentYAML, `namespace: "envplane-pr-{{ .PRNumber }}"`) {
 		t.Fatalf("deployment namespace rewrite missing: %s", deploymentYAML)
 	}
-	if !strings.Contains(deploymentYAML, `image: "ghcr.io/acme/orders:{{ if .CommitSHA }}{{ .CommitSHA }}{{ else }}abc123{{ end }}"`) {
+	if !strings.Contains(deploymentYAML, `image: "{{ if .CommitSHA }}ghcr.io/acme/orders:{{ .CommitSHA }}{{ else }}ghcr.io/acme/orders:abc123{{ end }}"`) {
 		t.Fatalf("deployment image rewrite missing: %s", deploymentYAML)
 	}
 	if !strings.Contains(deploymentYAML, `envplane.io/managed: "true"`) {
