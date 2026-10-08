@@ -488,6 +488,25 @@ func TestGenerateNetworkPolicyTemplatesForDenyAllEgress(t *testing.T) {
 	}
 }
 
+func TestRestrictedEgressKeepsInternalTrafficNamespaceScoped(t *testing.T) {
+	rules := restrictedEgressRules([]string{"reviewed-base"})
+	if len(rules) != 3 {
+		t.Fatalf("expected internal, base and DNS rules, got %d", len(rules))
+	}
+	peers := rules[0].(map[string]any)["to"].([]any)
+	if len(peers) != 1 {
+		t.Fatal("expected exactly one namespace-local peer")
+	}
+	peer := peers[0].(map[string]any)
+	if _, ok := peer["namespaceSelector"]; ok {
+		t.Fatal("internal rule must not select external namespaces")
+	}
+	selector, ok := peer["podSelector"].(map[string]any)
+	if !ok || len(selector) != 0 || len(peer) != 1 {
+		t.Fatal("internal rule must select only Pods in its own namespace")
+	}
+}
+
 func TestGenerateNetworkPolicyTemplatesRejectsInvalidMode(t *testing.T) {
 	_, err := GenerateNetworkPolicyTemplates(
 		NetworkPolicyConfig{

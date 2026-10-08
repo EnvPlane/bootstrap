@@ -1024,6 +1024,13 @@ func namespacePeerRule(namespace string) map[string]any {
 
 func restrictedEgressRules(baseNamespaces []string) []any {
 	rules := []any{
+		// A peer with only podSelector is scoped to this policy's namespace.
+		// Restricted external egress must not break frontend/backend/database
+		// communication inside the same feature environment. Never substitute
+		// an empty namespaceSelector, which would select every namespace.
+		map[string]any{
+			"to": []any{map[string]any{"podSelector": map[string]any{}}},
+		},
 		map[string]any{
 			"to": namespacePeerRules(baseNamespaces),
 		},
