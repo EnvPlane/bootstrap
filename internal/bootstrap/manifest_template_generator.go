@@ -275,6 +275,14 @@ func ValidateNetworkPolicyConfig(config NetworkPolicyConfig) error {
 	return nil
 }
 
+// Broad application allow policies must not union their privileges onto the
+// separately isolated read-only telemetry runtime. Deny-all remains unchanged.
+func featureWorkloadPolicySelector() map[string]any {
+	return map[string]any{"matchExpressions": []any{map[string]any{
+		"key": "envplane.io/pvc-exporter", "operator": "DoesNotExist",
+	}}}
+}
+
 func GenerateNetworkPolicyTemplates(
 	config NetworkPolicyConfig,
 	featureNamespace string,
@@ -301,7 +309,7 @@ func GenerateNetworkPolicyTemplates(
 				"namespace": ns,
 			},
 			"spec": map[string]any{
-				"podSelector": map[string]any{},
+				"podSelector": featureWorkloadPolicySelector(),
 				"policyTypes": []any{"Ingress"},
 				"ingress": []any{
 					map[string]any{
@@ -333,6 +341,9 @@ func GenerateNetworkPolicyTemplates(
 			},
 		}
 		spec := manifest["spec"].(map[string]any)
+		if mode != "deny all" {
+			spec["podSelector"] = featureWorkloadPolicySelector()
+		}
 		switch mode {
 		case "allow all":
 			spec["egress"] = []any{map[string]any{}}
@@ -360,7 +371,7 @@ func GenerateNetworkPolicyTemplates(
 					"namespace": baseNamespace,
 				},
 				"spec": map[string]any{
-					"podSelector": map[string]any{},
+					"podSelector": featureWorkloadPolicySelector(),
 					"policyTypes": []any{"Ingress"},
 					"ingress": []any{
 						map[string]any{
